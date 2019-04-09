@@ -7,10 +7,11 @@ namespace Data
 {
     public class Database
     {
-        private SortedList<int, Building> collBuildings = new SortedList<int, Building>();
-        private static Database db = null;
-        private readonly string ip = "212.152.179.117"; //"212.152.179.117" "192.168.128.152"
-        private static OracleConnection conn = null;
+        SortedList<int, Building> collBuildings = new SortedList<int, Building>();
+        SortedList<int, Visitor> collVisitors = new SortedList<int, Visitor>();
+        static Database db = null;
+        static OracleConnection conn = null;
+        readonly string ip = "212.152.179.117"; //"212.152.179.117" "192.168.128.152"
 
         private Database()
         {
@@ -46,6 +47,26 @@ namespace Data
                     collBuildings[Convert.ToInt32(reader["bId"].ToString())].AddPoint(new Point(Convert.ToInt32(reader["xCoordinate"].ToString()), Convert.ToInt32(reader["yCoordinate"].ToString())));
                 }
             }
+        }
+
+        private void ReadVisitorsFromDB()
+        {
+            string sqlCmd = "select v.v_id id, v.v_name name, t.X x, t.Y y from visitors v, TABLE(SDO_UTIL.GETVERTICES(v.POSITION)) t";
+            OracleCommand cmd = new OracleCommand(sqlCmd, conn);
+            OracleDataReader reader = cmd.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    collVisitors.Add(Convert.ToInt32(reader["id"]), new Visitor(Convert.ToInt32(reader["id"]), reader["name"].ToString(), new Point(Convert.ToInt32(reader["x"]), Convert.ToInt32(reader["y"]))));                    
+                }
+            }
+        }
+
+        public IList<Visitor> GetVisitors()
+        {
+            ReadVisitorsFromDB();
+            return collVisitors.Values;
         }
 
         public IList<Building> GetBuildings()

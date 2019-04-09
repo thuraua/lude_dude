@@ -9,7 +9,8 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="61*" MinHeight="61"/>
-            <RowDefinition Height="443*"/>
+            <RowDefinition Height="264*"/>
+            <RowDefinition Height="179*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="211*"/>
@@ -24,8 +25,18 @@
                 <DataGridTextColumn Binding="{Binding Y}" Width="*" Header="Y" IsReadOnly="True" CanUserSort="False" CanUserReorder="False" CanUserResize="False"/>
             </DataGrid.Columns>
         </DataGrid>
-        <Border Grid.Column="2" BorderBrush="Black" BorderThickness="1"  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="12,0,10,10" Grid.Row="1">
-            <Canvas x:Name="cvMap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="9" Background="#FFE4D8D8"/>
+        <Border Grid.Column="2" BorderBrush="Black" BorderThickness="1"  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="12,0,10,10" Grid.Row="1" Grid.RowSpan="2">
+            <Canvas x:Name="cvMap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="9" Background="#FFE4D8D8">
+            </Canvas>
         </Border>
+        <DataGrid x:Name="dgVisitors" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,10" Grid.Row="2" Grid.ColumnSpan="2" AutoGenerateColumns="False" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding ID}" Width="*" Header="ID" IsReadOnly="True" CanUserSort="True" CanUserReorder="False" CanUserResize="False"/>
+                <DataGridTextColumn Binding="{Binding Name}" Width="*" Header="Name" IsReadOnly="True" CanUserSort="True" CanUserReorder="False" CanUserResize="False"/>
+                <DataGridTextColumn Binding="{Binding Position.X}" Width="*" Header="X" IsReadOnly="True" CanUserSort="True" CanUserReorder="False" CanUserResize="False"/>
+                <DataGridTextColumn Binding="{Binding Position.Y}" Width="*" Header="Y" IsReadOnly="True" CanUserSort="True" CanUserReorder="False" CanUserResize="False"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <TextBox x:Name="textBox" Grid.Column="2" HorizontalAlignment="Left" Height="45" Margin="10,10,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="325"/>
     </Grid>
 </Window>
