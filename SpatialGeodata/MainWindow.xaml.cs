@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -77,6 +77,7 @@ namespace Program
             currentPolygon.Points = new PointCollection(pointsCurrentPolygon);
             cvMap.Children.Add(currentPolygon);
         }
+
         /// <summary>
         /// Fills observable points list with Drawing.Points from DB by converting them to System.Windows.Points
         /// </summary>
@@ -91,26 +92,65 @@ namespace Program
             DrawSelectedBuilding();
             DrawVisitors();
         }
+
         private void FillObsBuildings()
         {
             obsBuildings.Clear();
             foreach (Building building in db.GetBuildings())
                 obsBuildings.Add(building);
         }
-        private void ListBuildings_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+
+        private void ListBuildings_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateControlsToSelectedBuilding(((Building)listBuildings.SelectedItem).GetCollPoints());
+            IList<Visitor> list = db.ReadVisitorOfBuilding((Building)listBuildings.SelectedItem);
+            string text = "";
+            foreach (var visitor in list)
+                text += visitor.Name + ", ";
+            if (text != "")
+                text = text.Substring(0, text.Length - 3);
+            txtVisitors.Content = text;
         }
+
         /// <summary>
-        /// Resize the polygon acordingly to canvas when window is resized
+        /// Resize the polygon and canvas accordingly when window is resized
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void Dashboard_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            textBox.Text = "width: " + cvMap.ActualWidth + "    height: " + cvMap.ActualHeight + "    faktor: " + size_factor;
+            cvMap.Width = (border.ActualWidth < border.ActualHeight ? border.ActualWidth : border.ActualHeight) - 20;
+            cvMap.Height = (border.ActualHeight < border.ActualWidth ? border.ActualHeight : border.ActualWidth) - 20;
             if ((Building)listBuildings.SelectedItem != null)
                 UpdateControlsToSelectedBuilding(((Building)listBuildings.SelectedItem).GetCollPoints());
+        }
+
+        private void CvMap_MouseMove(object sender, MouseEventArgs e)
+        {
+            Point p = Mouse.GetPosition(cvMap);
+            txtCurrentCoordinates.Text = "X: " + (int)(p.X / size_factor) + ", Y: " + (int)(p.Y / size_factor);
+        }
+
+        private void CvMap_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Point p = Mouse.GetPosition(relativeTo: cvMap);
+            Visitor newVisitor = new Visitor(txtNewVisitorName.Text, new System.Drawing.Point((int)(p.X / size_factor), (int)(p.Y / size_factor)));
+            try
+            {
+                db.addVisitor(newVisitor);
+                obsVisitors.Add(newVisitor);
+                DrawVisitors();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void DgVisitors_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string result = db.ReadBuildingWhereVisitorOccurs((Visitor)dgVisitors.SelectedItem);
+            MessageBox.Show(result == "" ? "Außerhalb von Gebäuden!" : result);
         }
     }
 }

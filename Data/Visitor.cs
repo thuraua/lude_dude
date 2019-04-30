@@ -15,6 +15,13 @@ namespace Data
             Position = position;
         }
 
+        public Visitor(string text, Point point)
+        {
+            ID = -1;
+            Name = text;
+            Position = point;
+        }
+
         public override string ToString()
         {
             return Name + " (ID: " + ID + ")";

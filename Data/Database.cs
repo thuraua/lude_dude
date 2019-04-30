@@ -1,17 +1,17 @@
-﻿using System;
+﻿using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
-using Oracle.ManagedDataAccess.Client;
 
 namespace Data
 {
     public class Database
     {
-        SortedList<int, Building> collBuildings = new SortedList<int, Building>();
-        SortedList<int, Visitor> collVisitors = new SortedList<int, Visitor>();
-        static Database db = null;
-        static OracleConnection conn = null;
-        readonly string ip = "212.152.179.117"; //"212.152.179.117" "192.168.128.152"
+        private SortedList<int, Building> collBuildings = new SortedList<int, Building>();
+        private SortedList<int, Visitor> collVisitors = new SortedList<int, Visitor>();
+        private static Database db = null;
+        private static OracleConnection conn = null;
+        private readonly string ip = "192.168.128.152"; //"212.152.179.117" "192.168.128.152"
 
         private Database()
         {
@@ -24,10 +24,7 @@ namespace Data
 
         public static Database GetInstance()
         {
-            if (db == null)
-                db = new Database();
-
-            return db;
+            return db == null ? new Database() : db;
         }
 
         private void ReadBuildingsFromDB()
@@ -55,12 +52,8 @@ namespace Data
             OracleCommand cmd = new OracleCommand(sqlCmd, conn);
             OracleDataReader reader = cmd.ExecuteReader();
             if (reader.HasRows)
-            {
                 while (reader.Read())
-                {
-                    collVisitors.Add(Convert.ToInt32(reader["id"]), new Visitor(Convert.ToInt32(reader["id"]), reader["name"].ToString(), new Point(Convert.ToInt32(reader["x"]), Convert.ToInt32(reader["y"]))));                    
-                }
-            }
+                    collVisitors.Add(Convert.ToInt32(reader["id"]), new Visitor(Convert.ToInt32(reader["id"]), reader["name"].ToString(), new Point(Convert.ToInt32(reader["x"]), Convert.ToInt32(reader["y"]))));
         }
 
         public IList<Visitor> GetVisitors()
@@ -73,6 +66,44 @@ namespace Data
         {
             ReadBuildingsFromDB();
             return collBuildings.Values;
+        }
+
+        public void addVisitor(Visitor newVisitor)
+        {
+            string sqlCmd = "INSERT INTO visitors VALUES(visitors_seq.nextval, :name, SDO_GEOMETRY(2001, NULL, SDO_POINT_TYPE(:x, :y, NULL), NULL, NULL))";
+            OracleCommand cmd = new OracleCommand(sqlCmd, conn);
+            cmd.Parameters.Add("name", newVisitor.Name);
+            cmd.Parameters.Add("x", newVisitor.Position.X);
+            cmd.Parameters.Add("y", newVisitor.Position.Y);
+            cmd.ExecuteNonQuery();
+        }
+
+        public IList<Visitor> ReadVisitorOfBuilding(Building building)
+        {
+            string sqlCmd = "Select v.v_id id, v.v_name name, t.X x, t.Y y from visitors v , table (SDO_UTIL.GETVERTICES(v.position))t WHERE v.v_id IN (SELECT v2.v_id FROM visitors v2 INNER JOIN village b ON SDO_CONTAINS(b.BUILDING, v2.POSITION) = 'TRUE', TABLE(SDO_UTIL.GETVERTICES(v2.POSITION)) t where building_id = :buildingId )";
+            OracleCommand cmd = new OracleCommand(sqlCmd, conn);
+            cmd.Parameters.Add("buildingId", building.ID);
+            OracleDataReader reader = cmd.ExecuteReader();
+            List<Visitor> collVisitors = new List<Visitor>();
+            if (reader.HasRows)
+                while (reader.Read())
+                    collVisitors.Add(new Visitor(Convert.ToInt32(reader["id"]), reader["name"].ToString(), new Point(Convert.ToInt32(reader["x"]), Convert.ToInt32(reader["y"]))));
+            return collVisitors;
+        }
+
+        public string ReadBuildingWhereVisitorOccurs(Visitor selectedItem)
+        {
+            string rgw = "";
+            string selcmd = "SELECT  b.name FROM visitors v " +
+               "INNER JOIN village b ON SDO_CONTAINS(b.BUILDING, v.POSITION) = 'TRUE'," +
+               "TABLE(SDO_UTIL.GETVERTICES(v.POSITION)) t where v.v_name = :name";
+            OracleCommand cmd = new OracleCommand(selcmd, conn);
+            cmd.Parameters.Add(new OracleParameter("name", selectedItem.Name));
+            OracleDataReader reader = cmd.ExecuteReader();
+            if (reader.HasRows)
+                while (reader.Read())
+                    rgw += reader["name"].ToString();
+            return rgw;
         }
     }
 }

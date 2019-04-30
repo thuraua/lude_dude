@@ -5,31 +5,32 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Program"
         mc:Ignorable="d"
-        Title="Spatial Geodata" MinHeight="350" MinWidth="600" SizeChanged="Dashboard_SizeChanged">
+        Title="Spatial Geodata" MinHeight="450" MinWidth="730" SizeChanged="Dashboard_SizeChanged">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="61*" MinHeight="61"/>
             <RowDefinition Height="264*"/>
-            <RowDefinition Height="179*"/>
+            <RowDefinition Height="103*"/>
+            <RowDefinition Height="76*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="211*"/>
-            <ColumnDefinition Width="221*"/>
-            <ColumnDefinition Width="360*"/>
+            <ColumnDefinition Width="203*"/>
+            <ColumnDefinition Width="212*"/>
+            <ColumnDefinition Width="130*"/>
+            <ColumnDefinition Width="215*"/>
         </Grid.ColumnDefinitions>
-        <Label x:Name="label" MinWidth="150" Content="Buildings" HorizontalAlignment="Stretch"  VerticalAlignment="Top" FontFamily="Segoe UI Light" FontSize="36" Grid.Column="0" Grid.Row="0" Margin="10,0,0,0"/>
+        <Label x:Name="label" MinWidth="150" Content="Buildings" HorizontalAlignment="Stretch"  VerticalAlignment="Center" FontFamily="Segoe UI Light" FontSize="36" Grid.Column="0" Grid.Row="0" Margin="10,2,0,1" Height="58"/>
         <ListBox x:Name="listBuildings" Margin="10,0,0,10" SelectionChanged="ListBuildings_SelectionChanged" HorizontalAlignment="Stretch" Grid.Column="0" Grid.Row="1"/>
-        <DataGrid x:Name="dgCoordinates" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="10,0,0,10" AutoGenerateColumns="False" Grid.Column="1" Grid.Row="1">
+        <DataGrid x:Name="dgCoordinates" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="10,0,0,10" AutoGenerateColumns="False" Grid.Column="1" Grid.Row="1" Width="202">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding X}" Width="*" Header="X" IsReadOnly="True" CanUserSort="False" CanUserReorder="False" CanUserResize="False"/>
                 <DataGridTextColumn Binding="{Binding Y}" Width="*" Header="Y" IsReadOnly="True" CanUserSort="False" CanUserReorder="False" CanUserResize="False"/>
             </DataGrid.Columns>
         </DataGrid>
-        <Border Grid.Column="2" BorderBrush="Black" BorderThickness="1"  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="12,0,10,10" Grid.Row="1" Grid.RowSpan="2">
-            <Canvas x:Name="cvMap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="9" Background="#FFE4D8D8">
-            </Canvas>
+        <Border x:Name="border" Grid.Column="2" BorderBrush="Black" BorderThickness="1"  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="12,0,10,0" Grid.Row="1" Grid.RowSpan="2" Grid.ColumnSpan="2">
+            <Canvas x:Name="cvMap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Background="#FFE4D8D8" MouseMove="CvMap_MouseMove" MouseLeftButtonDown="CvMap_MouseLeftButtonDown" RenderTransformOrigin="0.5,0.5"/>
         </Border>
-        <DataGrid x:Name="dgVisitors" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,10" Grid.Row="2" Grid.ColumnSpan="2" AutoGenerateColumns="False" SelectionMode="Single">
+        <DataGrid x:Name="dgVisitors" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,0,0,10" Grid.Row="2" Grid.ColumnSpan="2" AutoGenerateColumns="False" SelectionMode="Single" Grid.RowSpan="2" SelectionChanged="DgVisitors_SelectionChanged">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding ID}" Width="*" Header="ID" IsReadOnly="True" CanUserSort="True" CanUserReorder="False" CanUserResize="False"/>
                 <DataGridTextColumn Binding="{Binding Name}" Width="*" Header="Name" IsReadOnly="True" CanUserSort="True" CanUserReorder="False" CanUserResize="False"/>
@@ -37,6 +38,10 @@
                 <DataGridTextColumn Binding="{Binding Position.Y}" Width="*" Header="Y" IsReadOnly="True" CanUserSort="True" CanUserReorder="False" CanUserResize="False"/>
             </DataGrid.Columns>
         </DataGrid>
-        <TextBox x:Name="textBox" Grid.Column="2" HorizontalAlignment="Left" Height="45" Margin="10,10,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="325"/>
+        <TextBox x:Name="txtNewVisitorName" Grid.Column="2" HorizontalAlignment="Stretch" Margin="12,20,10,18" TextWrapping="Wrap" Text="" Height="23" VerticalAlignment="Center"/>
+        <Label x:Name="na" Content="Create new visitor:" Grid.Column="1" HorizontalAlignment="Right" Margin="0,20,10,18" VerticalAlignment="Center" Height="23" Width="107"/>
+        <TextBox x:Name="txtCurrentCoordinates" Grid.Column="3" HorizontalAlignment="Stretch" Height="23" Margin="15,20,10,18" TextWrapping="Wrap" Text="" VerticalAlignment="Center"/>
+        <Label x:Name="label1" Content="Visitors of currently selected building:" Grid.Column="2" HorizontalAlignment="Left" Margin="12,5,0,0" Grid.Row="3" VerticalAlignment="Top" Grid.ColumnSpan="2" Width="323" Height="30"/>
+        <Label x:Name="txtVisitors" Content="- no building selected -" Grid.Column="2" HorizontalAlignment="Left" Margin="12,35,0,0" Grid.Row="3" VerticalAlignment="Top" Grid.ColumnSpan="2" Width="323" Height="31"/>
     </Grid>
 </Window>
