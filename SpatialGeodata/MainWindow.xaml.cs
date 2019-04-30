@@ -108,7 +108,7 @@ namespace Program
             foreach (var visitor in list)
                 text += visitor.Name + ", ";
             if (text != "")
-                text = text.Substring(0, text.Length - 3);
+                text = text.Substring(0, text.Length - 2);
             txtVisitors.Content = text;
         }
 
