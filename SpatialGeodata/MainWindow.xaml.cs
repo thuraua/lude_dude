@@ -137,7 +137,7 @@ namespace Program
             Visitor newVisitor = new Visitor(txtNewVisitorName.Text, new System.Drawing.Point((int)(p.X / size_factor), (int)(p.Y / size_factor)));
             try
             {
-                db.addVisitor(newVisitor);
+                db.AddVisitor(newVisitor);
                 obsVisitors.Add(newVisitor);
                 DrawVisitors();
             }

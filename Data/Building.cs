@@ -18,7 +18,6 @@ namespace Data
             Visitors = visitors;
             collPoints = new List<Point>();
         }
-
         public void AddPoint(Point p)
         {
             collPoints.Add(p);
