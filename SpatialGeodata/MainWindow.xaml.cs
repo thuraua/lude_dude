@@ -152,5 +152,22 @@ namespace Program
             string result = db.ReadBuildingWhereVisitorOccurs((Visitor)dgVisitors.SelectedItem);
             MessageBox.Show(result == "" ? "Außerhalb von Gebäuden!" : result);
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                int x = Convert.ToInt32(txtX.Text);
+                int y = Convert.ToInt32(txtY.Text);
+                int radius = Convert.ToInt32(txtRadius.Text);
+                string str = db.ReadVisitorsWithinRadius(x, y, radius);
+                MessageBox.Show(str);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+        }
     }
 }

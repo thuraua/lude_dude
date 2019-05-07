@@ -17,6 +17,8 @@ namespace Data
         private static readonly string VisitorInsert = "INSERT INTO visitors VALUES(visitors_seq.nextval, :name, SDO_GEOMETRY(2001, NULL, SDO_POINT_TYPE(:x, :y, NULL), NULL, NULL))";
         private static readonly string VisitorsOfBuildingSelect= "Select v.v_id id, v.v_name name, t.X x, t.Y y from visitors v , table (SDO_UTIL.GETVERTICES(v.position))t WHERE v.v_id IN (SELECT v2.v_id FROM visitors v2 INNER JOIN village b ON SDO_CONTAINS(b.BUILDING, v2.POSITION) = 'TRUE', TABLE(SDO_UTIL.GETVERTICES(v2.POSITION)) t where building_id = :buildingId )";
         private static readonly string BuildingsOfVisitorsSelect = "SELECT  b.name FROM visitors v INNER JOIN village b ON SDO_CONTAINS(b.BUILDING, v.POSITION) = 'TRUE', TABLE(SDO_UTIL.GETVERTICES(v.POSITION)) t where v.v_name = :name";
+        private static readonly string VisitorsInCircleSelect = "SELECT v.v_id id, v.v_name name, t.x X, t.y Y FROM visitors v , table (SDO_UTIL.GETVERTICES(v.position))t WHERE SDO_GEOM.SDO_DISTANCE(v.position, SDO_GEOMETRY(2001,NULL,SDO_POINT_TYPE(:cx,:cy,NULL), NULL, NULL), 0.005) < :range";
+
         private Database()
         {
             connection = new OracleConnection(@"user id=d4b26;password=d4b;data source=" +
@@ -100,6 +102,45 @@ namespace Data
                 while (reader.Read())
                     rgw += reader["name"].ToString();
             return rgw;
+        }
+
+        public string ReadVisitorsWithinRadius(int x, int y, int radius)
+        {
+            string returnValue = "";
+            List<Visitor> visitors = new List<Visitor>();
+            SortedSet<string> buildings=new SortedSet<string>();
+            OracleCommand cmd = new OracleCommand(VisitorsInCircleSelect, connection);
+            cmd.Parameters.Add("cx", x);
+            cmd.Parameters.Add("cy", y);
+            cmd.Parameters.Add("range", radius);
+            OracleDataReader reader = cmd.ExecuteReader();
+            if (reader.HasRows)
+                while (reader.Read())
+                {
+                    Visitor v= new Visitor(Convert.ToInt32(reader["id"]), reader["name"].ToString(), new Point(Convert.ToInt32(reader["X"]), Convert.ToInt32(reader["Y"])));
+                    visitors.Add(v);
+                    string buildingName = ReadBuildingWhereVisitorOccurs(v);
+                    buildings.Add(buildingName);
+                }
+            returnValue += "Visitors within this radius: \n";
+            foreach (var visitor in visitors)
+            {
+                returnValue += visitor.Name + ", ";
+            }
+            if (returnValue.EndsWith(", "))
+                returnValue = returnValue.Substring(0, returnValue.Length - 2);
+            else
+                returnValue = "No visitors within this radius!";
+            returnValue += "\nVisitors within this radius: \n";
+            foreach (var builing in  buildings)
+            {
+                returnValue += builing + ", ";
+            }
+            if (returnValue.EndsWith(", "))
+                returnValue = returnValue.Substring(0, returnValue.Length - 2);
+            else
+                returnValue = "No buildings within this radius!";
+            return returnValue;
         }
     }
 }
