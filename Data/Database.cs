@@ -12,10 +12,10 @@ namespace Data
         private static Database database = null;
         private static OracleConnection connection = null;
         private static readonly string IP = "192.168.128.152"; //"212.152.179.117" "192.168.128.152"
-        private static readonly string BuildingsSelect= "SELECT v.building_id as bId, v.name as bName, v.visitors as visitors, t.X as xCoordinate, t.Y as yCoordinate, t.id as cId FROM village v, TABLE(SDO_UTIL.GETVERTICES(v.building)) t";
-        private static readonly string VisitorsSelect= "select v.v_id id, v.v_name name, t.X x, t.Y y from visitors v, TABLE(SDO_UTIL.GETVERTICES(v.POSITION)) t";
+        private static readonly string BuildingsSelect = "SELECT v.building_id as bId, v.name as bName, v.visitors as visitors, t.X as xCoordinate, t.Y as yCoordinate, t.id as cId FROM village v, TABLE(SDO_UTIL.GETVERTICES(v.building)) t";
+        private static readonly string VisitorsSelect = "select v.v_id id, v.v_name name, t.X x, t.Y y from visitors v, TABLE(SDO_UTIL.GETVERTICES(v.POSITION)) t";
         private static readonly string VisitorInsert = "INSERT INTO visitors VALUES(visitors_seq.nextval, :name, SDO_GEOMETRY(2001, NULL, SDO_POINT_TYPE(:x, :y, NULL), NULL, NULL))";
-        private static readonly string VisitorsOfBuildingSelect= "Select v.v_id id, v.v_name name, t.X x, t.Y y from visitors v , table (SDO_UTIL.GETVERTICES(v.position))t WHERE v.v_id IN (SELECT v2.v_id FROM visitors v2 INNER JOIN village b ON SDO_CONTAINS(b.BUILDING, v2.POSITION) = 'TRUE', TABLE(SDO_UTIL.GETVERTICES(v2.POSITION)) t where building_id = :buildingId )";
+        private static readonly string VisitorsOfBuildingSelect = "Select v.v_id id, v.v_name name, t.X x, t.Y y from visitors v , table (SDO_UTIL.GETVERTICES(v.position))t WHERE v.v_id IN (SELECT v2.v_id FROM visitors v2 INNER JOIN village b ON SDO_CONTAINS(b.BUILDING, v2.POSITION) = 'TRUE', TABLE(SDO_UTIL.GETVERTICES(v2.POSITION)) t where building_id = :buildingId )";
         private static readonly string BuildingsOfVisitorsSelect = "SELECT  b.name FROM visitors v INNER JOIN village b ON SDO_CONTAINS(b.BUILDING, v.POSITION) = 'TRUE', TABLE(SDO_UTIL.GETVERTICES(v.POSITION)) t where v.v_name = :name";
         private static readonly string VisitorsInCircleSelect = "SELECT v.v_id id, v.v_name name, t.x X, t.y Y FROM visitors v , table (SDO_UTIL.GETVERTICES(v.position))t WHERE SDO_GEOM.SDO_DISTANCE(v.position, SDO_GEOMETRY(2001,NULL,SDO_POINT_TYPE(:cx,:cy,NULL), NULL, NULL), 0.005) < :range";
 
@@ -47,7 +47,7 @@ namespace Data
                         collBuildings.Add(building.ID, building);
                     }
                     collBuildings[Convert.ToInt32(reader["bId"].ToString())].AddPoint(new Point(Convert.ToInt32(reader["xCoordinate"].ToString()), Convert.ToInt32(reader["yCoordinate"].ToString())));
-                }          
+                }
         }
 
         private void ReadVisitorsFromDB()
@@ -108,7 +108,7 @@ namespace Data
         {
             string returnValue = "";
             List<Visitor> visitors = new List<Visitor>();
-            SortedSet<string> buildings=new SortedSet<string>();
+            SortedSet<string> buildingNames = new SortedSet<string>();
             OracleCommand cmd = new OracleCommand(VisitorsInCircleSelect, connection);
             cmd.Parameters.Add("cx", x);
             cmd.Parameters.Add("cy", y);
@@ -117,10 +117,11 @@ namespace Data
             if (reader.HasRows)
                 while (reader.Read())
                 {
-                    Visitor v= new Visitor(Convert.ToInt32(reader["id"]), reader["name"].ToString(), new Point(Convert.ToInt32(reader["X"]), Convert.ToInt32(reader["Y"])));
+                    Visitor v = new Visitor(Convert.ToInt32(reader["id"]), reader["name"].ToString(), new Point(Convert.ToInt32(reader["X"]), Convert.ToInt32(reader["Y"])));
                     visitors.Add(v);
                     string buildingName = ReadBuildingWhereVisitorOccurs(v);
-                    buildings.Add(buildingName);
+                    if (buildingName != "")
+                        buildingNames.Add(buildingName);
                 }
             returnValue += "Visitors within this radius: \n";
             foreach (var visitor in visitors)
@@ -132,9 +133,9 @@ namespace Data
             else
                 returnValue = "No visitors within this radius!";
             returnValue += "\nVisitors within this radius: \n";
-            foreach (var builing in  buildings)
+            foreach (var buildingName in buildingNames)
             {
-                returnValue += builing + ", ";
+                returnValue += buildingName + ", ";
             }
             if (returnValue.EndsWith(", "))
                 returnValue = returnValue.Substring(0, returnValue.Length - 2);
