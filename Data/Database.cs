@@ -132,7 +132,7 @@ namespace Data
                 returnValue = returnValue.Substring(0, returnValue.Length - 2);
             else
                 returnValue = "No visitors within this radius!";
-            returnValue += "\nVisitors within this radius: \n";
+            returnValue += "\nBuildings within this radius: \n";
             foreach (var buildingName in buildingNames)
             {
                 returnValue += buildingName + ", ";
